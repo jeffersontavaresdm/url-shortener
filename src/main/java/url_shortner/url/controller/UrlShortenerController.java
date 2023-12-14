@@ -20,7 +20,7 @@ public class UrlShortenerController {
     }
 
     @PostMapping
-    public ResponseEntity<UrlShortenerResponse> teste(@RequestParam("url") UrlShortenerRequest request) {
+    public ResponseEntity<UrlShortenerResponse> shorten(@RequestParam("url") UrlShortenerRequest request) {
         return ResponseEntity
             .status(HttpStatus.OK)
             .body(new UrlShortenerResponse(service.shorten(request.url())));
