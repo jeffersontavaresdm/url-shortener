@@ -2,6 +2,7 @@ package url_shortner.url.controller;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import url_shortner.url.service.UrlShortenerService;
@@ -20,19 +21,26 @@ public class UrlShortenerController {
     }
 
     @PostMapping
-    public ResponseEntity<UrlShortenerResponse> shorten(@RequestParam("url") UrlShortenerRequest request) {
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(new UrlShortenerResponse(service.shorten(request.url())));
+    public ResponseEntity<?> shorten(@RequestParam("url") UrlShortenerRequest request) {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(new UrlShortenerResponse(service.shorten(request.url())));
+        } catch (Exception exception) {
+            return ResponseEntity
+                .of(ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "internal.error"))
+                .build();
+        }
     }
 
     @GetMapping("/{hash}")
-    public ResponseEntity<HttpStatus> resolve(@PathVariable String hash) {
-        return ResponseEntity
-            .status(HttpStatus.MOVED_PERMANENTLY)
-            .location(URI.create(service.resolve(hash)))
-            .header(HttpHeaders.CONNECTION, "close")
-            .build();
+    public ResponseEntity<?> resolve(@PathVariable String hash) {
+        try {
+            return ResponseEntity
+                .status(HttpStatus.MOVED_PERMANENTLY)
+                .location(URI.create(service.resolve(hash)))
+                .header(HttpHeaders.CONNECTION, "close")
+                .build();
+        } catch (Exception exception) {
+            return ResponseEntity.of(ProblemDetail.forStatus(HttpStatus.BAD_REQUEST)).build();
+        }
     }
 }
-
